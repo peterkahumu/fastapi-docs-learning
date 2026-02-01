@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from query_params.app import router as queryparam_router
+from request_body.app import router as body_router
 
 app = FastAPI(
     title="Learning FastAPI",
@@ -7,6 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 app.include_router(queryparam_router)
+app.include_router(body_router)
 
 @app.get("/")
 def hello_word():
