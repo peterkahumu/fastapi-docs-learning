@@ -1,14 +1,17 @@
 from fastapi import FastAPI
 from query_params.app import router as queryparam_router
 from request_body.app import router as body_router
+from query_params_and_string_validations.app import router as qpstringvalidation
 
 app = FastAPI(
     title="Learning FastAPI",
     description="Learning how to build API's using fast api",
     version="1.0.0"
 )
+
 app.include_router(queryparam_router)
 app.include_router(body_router)
+app.include_router(qpstringvalidation)
 
 @app.get("/")
 def hello_word():
