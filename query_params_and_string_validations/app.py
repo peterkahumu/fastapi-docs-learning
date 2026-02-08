@@ -1,30 +1,35 @@
-from fastapi import APIRouter, Query
-from typing import List, Dict, Annotated
+from fastapi import APIRouter, Query, HTTPException, Path
+from itertools import islice
+from typing import Annotated, Dict
 
 
 router = APIRouter(
-    prefix="/qpandstringval",
-    tags=["queryparamsandstringvalidations"]
+    prefix="/qparams",
+    tags=["query_params", "String Validation"]
 )
 
-fake_items : List[Dict[int, str]] = [
-    { id :f"item{id}"}
-    for id in range(1,21)
-]
+fake_items ={
+    i : f"item{i}"
+    for i in range (1,21)
+}
 
-QueryParam = Annotated[str | None, Query(min_length=3, max_length=50)]
+ItemId = Annotated[int, Path(ge=10, le=100)]
+Skip = Annotated[int, Query(ge=0)]
+Pagination = Annotated[int, Query(ge=0, le=100)] # no more than 100 per page
 
 @router.get("/")
-def get_items(q : QueryParam = None):
-    if q:
-        n = len(fake_items) + 1
-        fake_items.append({ n : q})
-    return fake_items
-
-@router.get("/annotated_metadata")
-def get_annotated_metadata(q : Annotated[str | None, Query(max_length=10)] = None):
-    if q:
-        return q.__reversed__()
+def greeting():
     return {
-        "ooops": "Failure 101"
+        "Hey": "I am a greeting"
     }
+
+@router.get("/items")
+def get_items(skip : Skip = 0, limit : Pagination = 10):
+    return dict(islice(fake_items.items(), skip, skip+limit))
+
+@router.get("/items/{item_id}/")
+def get_item(item_id : ItemId):
+    item = fake_items.get(item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+    return item
