@@ -60,8 +60,8 @@ def partial_update(item_id : ItemID, item_data: ItemUpdate):
     item = fake_items.get(item_id)
     if not item:
         raise404Error()
-    
-    for key, value in item_data.model_dump(exclude_unset=True).items():
-        setattr(item, key, value)
-    
-    return item
+
+    update_fields = item_data.model_dump(exclude_unset=True)
+    updated_item = item.model_copy(update=update_fields)
+    fake_items[item_id] = updated_item
+    return fake_items[item_id]
