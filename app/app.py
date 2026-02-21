@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from query_params.app import router as queryparam_router
 from request_body.app import router as body_router
 from query_params_and_string_validations.app import router as qpstringvalidation
-from body_multiple_params.app import body_multiple_params
+from body_multiple_params.app import body_multiple_params as body_multiple_params
 from body_fields.app import body_field
+from nested_models.app import app as nested_models_router
 
 app = FastAPI(
     title="Learning FastAPI",
@@ -16,6 +17,7 @@ app.include_router(body_router)
 app.include_router(qpstringvalidation)
 app.include_router(body_multiple_params)
 app.include_router(body_field)
+app.include_router(nested_models_router)
 
 @app.get("/")
 def hello_word():
