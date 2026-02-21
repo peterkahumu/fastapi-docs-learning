@@ -1,8 +1,8 @@
-from fastapi import APIRouter, Path, Query, HTTPException
+from fastapi import APIRouter, Path, Query, HTTPException, Body
 from typing import Annotated, Dict
 import itertools
 
-from .schema import Item, ItemUpdate
+from .schema import Item, ItemUpdate, User, Importance
 
 body_multiple_params = APIRouter(prefix="/body-multiple-params", tags=["bodymultipleparams"])
 
@@ -65,3 +65,29 @@ def partial_update(item_id : ItemID, item_data: ItemUpdate):
     updated_item = item.model_copy(update=update_fields)
     fake_items[item_id] = updated_item
     return fake_items[item_id]
+
+
+@app.patch("/items/{item_id}/user-update/")
+def user_partial_update(item_id : ItemID, user : User, item : Item, importance: Importance = Body(...)):
+    updated_item = partial_update(item_id, item)
+    return {
+        "user": user,
+        "update_item": updated_item,
+        "importance": Importance(importance).name
+    }
+
+
+# multiple body params + query param
+@app.patch("/item/{item_id}/show-importance/")
+def body_and_query(item_id: ItemID, item_data: ItemUpdate, user : User, importance : Importance, show_importance : bool = False):
+    item = fake_items.get(item_id)
+    if not item:
+        raise404Error()
+    if show_importance:
+        return user_partial_update(item_id, user, item_data, importance)
+    
+    updated_item = partial_update(item_id, item_data)
+    return {
+        "user": user,
+        "updated_item": updated_item
+    }
