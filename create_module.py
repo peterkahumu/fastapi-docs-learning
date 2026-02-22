@@ -26,7 +26,13 @@ def create_module(module_name: str):
     (module_path / "__init__.py").write_text(init_content)
     
     # Create app.py with fake DB (using comprehension) and CRUD endpoints
-    app_content = f'''from fastapi import APIRouter, HTTPException, status
+    app_content = f'''from fastapi import(
+    APIRouter,
+    HTTPException,
+    status
+)
+
+import itertools
 from typing import Dict, List
 
 from .schema import Item, ItemCreate, ItemUpdate
@@ -59,9 +65,7 @@ def get_next_id() -> int:
 @router.get("/items/", response_model=List[Item])
 def get_items(skip: int = 0, limit: int = 10):
     """Get all items with pagination."""
-    items = list(fake_items.values())
-    return items[skip:skip + limit]
-
+    return list(itertools.islice(fake_items.values(), skip, skip + limit))
 
 @router.get("/items/{{item_id}}", response_model=Item)
 def get_item(item_id: int):
