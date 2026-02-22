@@ -2,6 +2,29 @@ from pydantic import BaseModel, Field, model_validator, HttpUrl
 from typing import Optional
 
 
+item_model_config = {
+    "json_schema_extra": {
+        "examples": [
+            {
+                "name": "item1",
+                "description": "This is a sample description",
+                "price": 999,
+                "tax": 99,
+                "tags" : ["love", "care", "parenting", "young adult"],
+                "images" : [
+                    {
+                    "name": "A couple in love",
+                    "url" : "https://acoupleinlove.com/"
+                    }
+                ],
+            }
+        ],
+        "order" : ["name", "description", "price", "tax", "images"],
+    }
+}
+
+
+
 class Image(BaseModel):
     name : str = Field(max_length=20, examples=["A couple in love"])
     url : HttpUrl = Field(examples=["http://example.com"])
@@ -14,7 +37,7 @@ class ItemBase(BaseModel):
     price : float = Field(gt=0, examples=[999.99])
     tax : Optional[float] = Field(default=None, ge=0)
     tags : Optional[set[str]] = Field(default_factory=set, title="Searchable tags for identification or grouping") # list fields
-    image : Optional[list[Image]] = None
+    images : Optional[list[Image]] = None
 
     @model_validator(mode="after")
     def validate_tax_le_price(self):
@@ -23,6 +46,7 @@ class ItemBase(BaseModel):
         return self
 
 
+    model_config = item_model_config
 class Item(ItemBase):
     id : int = Field(ge=0)
 
@@ -37,4 +61,6 @@ class ItemUpdate(BaseModel):
     price : Optional[float] = None
     tax : Optional[float] = None
     tags : Optional[set[str]] = None
-    image : Optional[list[Image]] = None
+    images : Optional[list[Image]] = None
+
+    model_config = item_model_config
