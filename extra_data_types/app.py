@@ -1,23 +1,35 @@
 from fastapi import(
     APIRouter,
     HTTPException,
-    status
+    status,
+    Body
 )
 
 import itertools
-from typing import Dict, List
+from uuid import uuid4, UUID
+from typing import Dict, List, Annotated
+from datetime import(
+    datetime,
+    timedelta,
+    time
+)
 
 from .schema import Item, ItemCreate, ItemUpdate
 
 router = APIRouter(prefix="/extra_data_types", tags=["extra_data_types"])
 
-fake_items: Dict[int, Item] = {
-    i : Item(
-        id=i,
-        name = f'Item{i}',
+fake_items: Dict[UUID, Item] = {
+   
+}
+
+for i in range(1,11):
+    item_id = uuid4()
+    fake_items[item_id] = Item(
+        id=item_id,
+        name=f'Item{i}',
         description=f"This is item {i}",
-        price = i * 10,
-        tax = i,
+        price=i * 10,
+        tax=i,
         tags=[f"love{i}", f"parenting{i}"],
         images=[
             {
@@ -26,13 +38,6 @@ fake_items: Dict[int, Item] = {
             }
         ]
     )
-    for i in range(1, 11)
-}
-
-def get_next_id() -> int:
-    """Get the next available ID."""
-    return max(fake_items.keys(), default=0) + 1
-
 
 @router.get("/items/", response_model=List[Item])
 def get_items(skip: int = 0, limit: int = 10):
@@ -40,7 +45,7 @@ def get_items(skip: int = 0, limit: int = 10):
     return list(itertools.islice(fake_items.values(), skip, skip + limit))
 
 @router.get("/items/{item_id}", response_model=Item)
-def get_item(item_id: int):
+def get_item(item_id: UUID):
     """Get a specific item by ID."""
     if item_id not in fake_items:
         raise HTTPException(
@@ -53,14 +58,21 @@ def get_item(item_id: int):
 @router.post("/items/", response_model=Item, status_code=status.HTTP_201_CREATED)
 def create_item(item: ItemCreate):
     """Create a new item."""
-    new_id = get_next_id()
+    new_id = uuid4()
     new_item = Item(id=new_id, **item.model_dump())
     fake_items[new_id] = new_item
     return new_item
 
 
 @router.patch("/items/{item_id}", response_model=Item)
-def update_item(item_id: int, item: ItemUpdate):
+def update_item(
+    item_id: UUID,
+    item: ItemUpdate,
+    start_datetime : Annotated[datetime, Body()],
+    end_datetime: Annotated[datetime, Body()],
+    process_after : Annotated[timedelta, Body()],
+    repeat_at : Annotated[time, Body()] = None,
+):
     """Update an existing item."""
     if item_id not in fake_items:
         raise HTTPException(
@@ -73,10 +85,18 @@ def update_item(item_id: int, item: ItemUpdate):
     update_data = item.model_dump(exclude_unset=True)
     updated_item = current_item.model_copy(update=update_data)
     fake_items[item_id] = updated_item
-    return updated_item
+
+    start_process = start_datetime + process_after
+    duration = end_datetime - start_process
+    return {
+        "item": updated_item,
+        "start_process": start_process,
+        "duration": duration,
+        "repeat_time": repeat_at,
+    }
 
 @router.delete("/items/{item_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_item(item_id: int):
+def delete_item(item_id: UUID):
     """Delete an item."""
     if item_id not in fake_items:
         raise HTTPException(

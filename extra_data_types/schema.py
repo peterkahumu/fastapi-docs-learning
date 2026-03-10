@@ -1,5 +1,11 @@
-from pydantic import BaseModel, Field, model_validator, HttpUrl
+from pydantic import (
+    BaseModel,
+    Field,
+    model_validator,
+    HttpUrl
+)
 from typing import Optional
+from uuid import UUID
 
 
 class Image(BaseModel):
@@ -35,7 +41,7 @@ class ItemBase(BaseModel):
 
 
 class Item(ItemBase):
-    id: int = Field(ge=0, examples=[1])
+    id: UUID
 
 
 class ItemCreate(ItemBase):
