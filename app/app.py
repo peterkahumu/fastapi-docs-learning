@@ -6,19 +6,22 @@ from body_multiple_params.app import body_multiple_params as body_multiple_param
 from body_fields.app import body_field
 from nested_models.app import app as nested_models_router
 from extra_data_types.app import router as extra_data_types_router
+from response_model.app import router as response_model_router
+
 app = FastAPI(
     title="Learning FastAPI",
     description="Learning how to build API's using fast api",
     version="1.0.0"
 )
 
-app.include_router(queryparam_router)
-app.include_router(body_router)
-app.include_router(qpstringvalidation)
-app.include_router(body_multiple_params)
-app.include_router(body_field)
-app.include_router(nested_models_router)
-app.include_router(extra_data_types_router)
+# app.include_router(queryparam_router)
+# app.include_router(body_router)
+# app.include_router(qpstringvalidation)
+# app.include_router(body_multiple_params)
+# app.include_router(body_field)
+# app.include_router(nested_models_router)
+# app.include_router(extra_data_types_router)
+app.include_router(response_model_router)
 
 @app.get("/")
 def hello_word():
